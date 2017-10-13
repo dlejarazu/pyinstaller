@@ -2171,7 +2171,8 @@ class ModuleGraph(ObjectGraph):
             `MissingNode` instances are created for all unimportable modules.
         """
         self.msg(3, "_safe_import_hook", target_module_partname, source_module, target_attr_names, level)
-
+        
+        has_swig_import_failed = False
         def is_swig_candidate():
             return (source_module is not None and
                     target_attr_names is None and
@@ -2179,7 +2180,8 @@ class ModuleGraph(ObjectGraph):
                     type(source_module) is SourceModule and
                     target_module_partname ==
                       '_' + source_module.identifier.rpartition('.')[2] and
-                    sys.version_info[0] == 3)
+                    sys.version_info[0] == 3 and
+                    not has_swig_import_failed)
             
 
         # List of the graph nodes created for all target modules both
@@ -2276,6 +2278,7 @@ class ModuleGraph(ObjectGraph):
             # If this module remains unimportable...
             if target_modules is None:
                 self.msg(2, "ImportError:", str(msg))
+                has_swig_import_failed = True
 
                 # Add this module as a MissingModule node.
                 target_module = self.createNode(
